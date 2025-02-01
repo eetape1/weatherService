@@ -7,8 +7,8 @@
 │   ├── jenkins-deployment.yaml
 │   ├── weatherService-deployment.yaml
 │   └── weatherService-loadbalancer.yaml
-├── Jenkinsfile/
-│   └── pipeline_file
+├── Jenkins/
+│   └── Jenkinsfile
 └── Terraform/
     ├── main.tf
     └── backend.tf
