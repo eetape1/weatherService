@@ -2,6 +2,12 @@ provider "aws" {
   region = "us-east-2"
 }
 
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.existing_cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.existing_cluster.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.existing_cluster.token
+}
+
 data "aws_eks_cluster" "existing_cluster" {
   name = "WeatherApp"
 }
@@ -15,7 +21,10 @@ resource "random_string" "node_group_suffix" {
   special = false
   upper   = false
   lower   = true
-  numeric   = true
+  numeric = true
+  keepers = {
+      refresh_time = timestamp()
+  }
 }
 
 resource "aws_eks_node_group" "eks_node_group" {
@@ -30,7 +39,7 @@ resource "aws_eks_node_group" "eks_node_group" {
   ]
 
   # Private Subnets
-  # subnet_ids      = [
+  #   subnet_ids      = [
   #  "subnet-0fbd27d62123de106",
   #  "subnet-0d165e3cc8e537471"
   # ]
@@ -38,7 +47,7 @@ resource "aws_eks_node_group" "eks_node_group" {
   scaling_config {
     desired_size = 2
     max_size     = 4
-    min_size     = 2
+    min_size     = 1
   }
 
   ami_type       = "AL2_x86_64"
