@@ -1,0 +1,14 @@
+/
+├── app.py
+├── Dockerfile
+├── requirements.txt
+├── Kubernetes/
+│   ├── jenkins-deployment.yaml
+│   ├── jenkins-deployment.yaml
+│   ├── weatherService-deployment.yaml
+│   └── weatherService-loadbalancer.yaml
+├── Jenkinsfile/
+│   └── pipeline_file
+└── Terraform/
+    ├── main.tf
+    └── backend.tf
