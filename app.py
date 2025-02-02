@@ -15,7 +15,6 @@ try:
     print("Decoding Successful!", flush=True)
     
 except Exception as e:
-    OPENCAGE_API_KEY = "FAILED_DECODING"  # Explicitly set on decoding failure
     print(f"DEBUG: OPENCAGE_API_KEY = {OPENCAGE_API_KEY}", flush=True)
 
 def get_lat_lon(location):
