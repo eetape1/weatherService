@@ -12,6 +12,7 @@ OPENCAGE_API_KEY = os.getenv("OPENCAGE_API_KEY")
 # Decode the base64-encoded API key from the environment variable
 try:
     OPENCAGE_API_KEY = base64.b64decode(os.getenv("OPENCAGE_API_KEY", "")).decode('utf-8')
+    OPENCAGE_API_KEY = base64.b64decode(os.getenv("OPENCAGE_API_KEY", "")).decode('utf-8')
     print("Decoding Successful!", flush=True)
     
 except Exception as e:
