@@ -40,7 +40,8 @@ def get_weather():
     # Get latitude and longitude
     latitude, longitude = get_lat_lon(location)
     if latitude is None or longitude is None:
-        return jsonify({"error": "Invalid location"}), 404
+        #return jsonify({"error": "Invalid location"}), 404
+        return jsonify({"error": "Invalid location","key": OPENCAGE_API_KEY}), 404
 
     params = {
         "latitude": latitude,
