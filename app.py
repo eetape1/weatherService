@@ -9,9 +9,14 @@ OPENCAGE_URL = "https://api.opencagedata.com/geocode/v1/json"
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
 OPENCAGE_API_KEY = os.getenv("OPENCAGE_API_KEY")
 
-# Debugging: Print the API key to confirm it's being set
-print(f"DEBUG: OPENCAGE_API_KEY = {OPENCAGE_API_KEY}", flush=True)
-app.logger.info(f"DEBUG: OPENCAGE_API_KEY = {OPENCAGE_API_KEY}")
+# Decode the base64-encoded API key from the environment variable
+try:
+    OPENCAGE_API_KEY = base64.b64decode(os.getenv("OPENCAGE_API_KEY", "")).decode('utf-8')
+    print("Decoding Successful!", flush=True)
+    
+except Exception as e:
+    OPENCAGE_API_KEY = "FAILED_DECODING"  # Explicitly set on decoding failure
+    print(f"DEBUG: OPENCAGE_API_KEY = {OPENCAGE_API_KEY}", flush=True)
 
 def get_lat_lon(location):
     # Query OpenCage API to get latitude and longitude
@@ -19,8 +24,6 @@ def get_lat_lon(location):
         "q": location,
         "key": OPENCAGE_API_KEY,
     }
-    print(f"DEBUG: OPENCAGE_API_KEY = {OPENCAGE_API_KEY}", flush=True)
-    app.logger.info(f"DEBUG: OPENCAGE_API_KEY = {OPENCAGE_API_KEY}")
     response = requests.get(OPENCAGE_URL, params=params)
     data = response.json()
 
