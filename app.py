@@ -19,6 +19,8 @@ def get_lat_lon(location):
         "q": location,
         "key": OPENCAGE_API_KEY,
     }
+    print(f"DEBUG: OPENCAGE_API_KEY = {OPENCAGE_API_KEY}", flush=True)
+    app.logger.info(f"DEBUG: OPENCAGE_API_KEY = {OPENCAGE_API_KEY}")
     response = requests.get(OPENCAGE_URL, params=params)
     data = response.json()
 
