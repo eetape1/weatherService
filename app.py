@@ -7,8 +7,7 @@ app = Flask(__name__)
 # OpenCage & Open Meteo API endpoint for geocoding
 OPENCAGE_URL = "https://api.opencagedata.com/geocode/v1/json"
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
-OPENCAGE_API_KEY = "a4b30e6a67984e5c8250e7762769e90a"
-#OPENCAGE_API_KEY = os.getenv("OPENCAGE_API_KEY")
+OPENCAGE_API_KEY = os.getenv("OPENCAGE_API_KEY")
 
 def get_lat_lon(location):
     # Query OpenCage API to get latitude and longitude
