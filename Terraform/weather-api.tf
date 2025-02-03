@@ -35,6 +35,7 @@ resource "kubernetes_secret" "opencage_api_key" {
   data = {
     OPENCAGE_API_KEY = #Redacted
   }
+  depends_on = [aws_eks_node_group.eks_node_group]
 }
 
 
@@ -60,4 +61,5 @@ resource "kubernetes_service" "weather_api_internal_service" {
 
     type = "ClusterIP"
   }
+  depends_on = [aws_eks_node_group.eks_node_group]
 }
