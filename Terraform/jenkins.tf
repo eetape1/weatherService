@@ -112,5 +112,6 @@ resource "kubernetes_service" "jenkins_loadbalancer" {
     }
 
     type = "LoadBalancer"
-  }
+ }
+    depends_on = [aws_eks_node_group.eks_node_group]
 }
