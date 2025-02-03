@@ -22,6 +22,7 @@ resource "kubernetes_service" "weather_api_loadbalancer" {
 
     type = "LoadBalancer"
   }
+  depends_on = [aws_eks_node_group.eks_node_group]
 }
 
 
@@ -33,7 +34,7 @@ resource "kubernetes_secret" "opencage_api_key" {
   }
 
   data = {
-    OPENCAGE_API_KEY = #Redacted
+    OPENCAGE_API_KEY = "a4b30e6a67984e5c8250e7762769e90a"
   }
   depends_on = [aws_eks_node_group.eks_node_group]
 }
