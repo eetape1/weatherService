@@ -1,0 +1,94 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'us-east-2'  
+        EKS_CLUSTER_NAME = // redacted cluster name 
+        DOCKER_CREDENTIALS_ID = // redacted id 
+        AWS_CREDENTIALS_ID = // redacted id   
+    }
+
+    stages {
+        stage('Checkout GitHub Repo') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/eetape1/weatherService.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Generate a unique tag then build
+                    def IMAGE_TAG = "${env.BUILD_NUMBER}"
+                    sh "docker build -t eetape/weatherservice:secure-${IMAGE_TAG} ."
+                }
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    script {
+                         // Log in to Docker Hub and push the image
+                        def IMAGE_TAG = "${env.BUILD_NUMBER}"  
+                        sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+                        sh "docker push eetape/weatherservice:secure-${IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+
+        stage('Set up AWS CLI & kubectl') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: "${AWS_CREDENTIALS_ID}",
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                ]]) {
+                    script {
+                        sh 'aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID'
+                        sh 'aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY'
+                        sh 'aws configure set region $AWS_REGION'
+                        sh 'aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER_NAME'
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                script {
+                    def IMAGE_TAG = "${env.BUILD_NUMBER}" 
+                  
+                    // Check if the deployment exists
+                    def deploymentExists = sh(
+                         script: "kubectl get deployment weather-api --ignore-not-found",
+                      returnStdout: true
+                     ).trim()
+                    if (deploymentExists) {  
+                        // Update the existing deployment with the new image
+                        echo "Updating existing weather-api deployment with new image..."
+                        sh "kubectl set image deployment/weather-api weather-api=eetape/weatherservice:secure-${IMAGE_TAG}"
+                        sh "kubectl rollout status deployment/weather-api"
+
+                    } else {  // If deployment dne, create it
+                      echo "Deployment does not exist. Creating a new deployment..."
+                      sh "kubectl apply -f K8s/weather-api-deployment.yaml "
+                      sh "kubectl rollout status deployment/weather-api "
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment to EKS was successful!'
+        }
+        failure {
+            echo 'Deployment failed. Please check the logs for errors.'
+        }
+    }
+}
