@@ -18,20 +18,34 @@ except Exception as e:
     print("DEBUG: OPENCAGE_API_KEY = FAILED_DECODING", flush=True)
 
 def get_lat_lon(location):
-    # Query OpenCage API to get latitude & longitude
+    """Get latitude and longitude with improved validation."""
     params = {
         "q": location,
         "key": OPENCAGE_API_KEY,
+        "limit": 1,  # Limit to 1 result
+        "min_confidence": 7 
     }
+    
     response = requests.get(OPENCAGE_URL, params=params)
     data = response.json()
-
-    if response.status_code == 200 and data["results"]:
-        lat = data["results"][0]["geometry"]["lat"]
-        lon = data["results"][0]["geometry"]["lng"]
-        return lat, lon
-    else:
+    
+    if response.status_code != 200:
         return None, None
+        
+    if not data.get("results"):
+        return None, None
+        
+    result = data["results"][0]
+    
+    # validation checks
+    if (
+        result.get("confidence") < 7 or  
+        not result.get("components") or 
+        result.get("components").get("_type") not in ["city", "town", "village", "state", "country"]  # Must be a valid location type
+    ):
+        return None, None
+        
+    return result["geometry"]["lat"], result["geometry"]["lng"]
 
 @app.route("/weather", methods=["GET"])
 def get_weather():
