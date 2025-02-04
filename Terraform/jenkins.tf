@@ -28,7 +28,7 @@ resource "kubernetes_deployment" "jenkins" {
         # Jenkins container
         container {
           name  = "jenkins"
-          image = "eetape/jenkins:lts-jdk17"
+          image = "eetape/fulljenkins"
 
           security_context {
             run_as_user  = 1000 
@@ -37,7 +37,7 @@ resource "kubernetes_deployment" "jenkins" {
 
           env {
             name  = "DOCKER_HOST"
-            value = "tcp://localhost:2375" # Communicate with Docker-in-Docker sidecar
+            value = "tcp://localhost:2375" # Communicate with DinDocker sidecar
           }
 
           port {
@@ -112,6 +112,7 @@ resource "kubernetes_service" "jenkins_loadbalancer" {
     }
 
     type = "LoadBalancer"
- }
+  }
+
     depends_on = [aws_eks_node_group.eks_node_group]
 }
