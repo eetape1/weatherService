@@ -15,10 +15,10 @@ try:
     print("Decoding Successful!", flush=True)
     
 except Exception as e:
-    print(f"DEBUG: OPENCAGE_API_KEY = {OPENCAGE_API_KEY}", flush=True)
+    print("DEBUG: OPENCAGE_API_KEY = FAILED_DECODING", flush=True)
 
 def get_lat_lon(location):
-    # Query OpenCage API to get latitude and longitude
+    # Query OpenCage API to get latitude & longitude
     params = {
         "q": location,
         "key": OPENCAGE_API_KEY,
@@ -42,8 +42,7 @@ def get_weather():
     # Get latitude and longitude
     latitude, longitude = get_lat_lon(location)
     if latitude is None or longitude is None:
-        #return jsonify({"error": "Invalid location"}), 404
-        return jsonify({"error": "Invalid location","key": OPENCAGE_API_KEY}), 404
+        return jsonify({"error": "Invalid location"}), 404
 
     params = {
         "latitude": latitude,
