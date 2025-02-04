@@ -42,6 +42,45 @@ data "aws_eks_cluster_auth" "weather_cluster" {
   name = aws_eks_cluster.weather_cluster.name
 }
 
+
+resource "aws_security_group_rule" "eks_inbound" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = [data.aws_vpc.eks_vpc.cidr_block] 
+  security_group_id = data.aws_eks_cluster.weather_cluster.vpc_config[0].cluster_security_group_id
+}
+
+resource "aws_security_group_rule" "eks_inbound_node_communication" {
+  type              = "ingress"
+  from_port         = 1025
+  to_port           = 65535
+  protocol          = "tcp"
+  cidr_blocks       = [data.aws_vpc.eks_vpc.cidr_block]   
+  security_group_id = data.aws_eks_cluster.weather_cluster.vpc_config[0].cluster_security_group_id
+}
+
+# Egress rules
+resource "aws_security_group_rule" "eks_outbound" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"  # all protos
+  cidr_blocks       = [data.aws_vpc.eks_vpc.cidr_block]
+  security_group_id = data.aws_eks_cluster.weather_cluster.vpc_config[0].cluster_security_group_id
+}
+
+resource "aws_security_group_rule" "eks_outbound_node_communication" {
+  type              = "egress"
+  from_port         = 1025
+  to_port           = 65535
+  protocol          = "tcp"
+  cidr_blocks       = [data.aws_vpc.eks_vpc.cidr_block]
+  security_group_id = data.aws_eks_cluster.weather_cluster.vpc_config[0].cluster_security_group_id
+}
+
+
 provider "kubernetes" {
   host                   = aws_eks_cluster.weather_cluster.endpoint
   cluster_ca_certificate = base64decode(aws_eks_cluster.weather_cluster.certificate_authority[0].data)
@@ -75,50 +114,12 @@ resource "aws_ec2_tag" "subnet_tags" {
   value       = "shared"
 }
 
-resource "aws_security_group" "worker_node_sg" {
-  name        = "eks-worker-node-sg"
-  description = "Security group for EKS worker nodes"
-  vpc_id      = "vpc-0d9daef28aee01d6d"
-
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    self        = true
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [data.aws_vpc.eks_vpc.cidr_block]
-  }
-
-  ingress {
-    from_port   = 50051
-    to_port     = 50051
-    protocol    = "tcp"
-    self        = true
-    description = "Allow CNI port"
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  depends_on = [aws_eks_cluster.weather_cluster]
-}
-
 resource "aws_launch_template" "node_group_template" {
   name_prefix   = "eks-node-group"
   instance_type = "t3.medium"
   
   vpc_security_group_ids = [
-    # aws_security_group.worker_node_sg.id,
-    "sg-0dd9db7b318d71074"
+     "sg-0dd9db7b318d71074"
   ]
 
   block_device_mappings {
@@ -146,7 +147,7 @@ Content-Type: text/x-shellscript; charset="us-ascii"
 EOF
   )
 
-  depends_on = [aws_security_group.worker_node_sg]
+  depends_on = [aws_eks_cluster.weather_cluster]
 }
 
 resource "aws_eks_node_group" "eks_node_group" {
