@@ -11,5 +11,3 @@
     ├── jenkins.tf
     ├── weather-api.tf
     └── backend.tf
-
-<img src="image.PNG" alt="Image description">
