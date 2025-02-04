@@ -18,31 +18,21 @@ except Exception as e:
     print("DEBUG: OPENCAGE_API_KEY = FAILED_DECODING", flush=True)
 
 def get_lat_lon(location):
+    # Query OpenCage API to get latitude & longitude
     params = {
         "q": location,
         "key": OPENCAGE_API_KEY,
-        "limit": 1,
     }
-    
-    try:
-        response = requests.get(OPENCAGE_URL, params=params)
-        data = response.json()
-        
-        if response.status_code != 200:
-            print(f"OpenCage error: {response.text}", flush=True)
-            return None, None
-            
-        if not data.get("results"):
-            return None, None
-            
-        result = data["results"][0]
-        
-        # Simplified validation - just check if we have valid coordinates
-        return result["geometry"]["lat"], result["geometry"]["lng"]
-        
-    except Exception as e:
-        print(f"Error in get_lat_lon: {str(e)}", flush=True)
+    response = requests.get(OPENCAGE_URL, params=params)
+    data = response.json()
+
+    if response.status_code == 200 and data["results"]:
+        lat = data["results"][0]["geometry"]["lat"]
+        lon = data["results"][0]["geometry"]["lng"]
+        return lat, lon
+    else:
         return None, None
+
 
 @app.route("/weather", methods=["GET"])
 def get_weather():
