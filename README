@@ -3,12 +3,11 @@
 ├── Dockerfile
 ├── requirements.txt
 ├── Kubernetes/
-│   ├── jenkins-deployment.yaml
-│   ├── jenkins-deployment.yaml
-│   ├── weatherService-deployment.yaml
-│   └── weatherService-loadbalancer.yaml
+│   └── weatherService-deployment.yaml
 ├── Jenkins/
 │   └── Jenkinsfile
 └── Terraform/
     ├── main.tf
+    ├── jenkins.tf
+    ├── weather-api.tf
     └── backend.tf
